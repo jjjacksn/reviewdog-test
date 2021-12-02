@@ -1,0 +1,73 @@
+name: Python
+
+on:
+  pull_request:
+    branches: [ main, gh-workflow ]
+
+jobs:
+  lint:
+    permissions:
+      checks: write
+      contents: read
+      pull-requests: write
+    name: Lint
+    runs-on: ubuntu-latest
+    env:
+      REVIEWDOG_VERSION: v0.13.0
+      REVIEWDOG_FILTER_MODE: added
+      REVIEWDOG_FAIL_ON_ERROR: 'false'
+      REVIEWDOG_LEVEL: error
+      PYTHON_VERSION: 3.7.5
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Setup Python 3.7
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install pipenv
+        run: |
+          python -m pip install --upgrade pipenv wheel
+
+      - id: cache-pipenv
+        uses: actions/cache@v2
+        with:
+          path: ~/.local/share/virtualenvs
+          key: ${{ runner.os }}-python-${{ env.PYTHON_VERSION }}-pipenv-${{ hashFiles('**/Pipfile.lock') }}
+
+      - name: Install dependencies
+        if: steps.cache-pipenv.outputs.cache-hit != 'true'
+        run: |
+          pipenv install --deploy --dev
+
+      - name: Install Review Dog
+        uses: reviewdog/action-setup@v1
+        with:
+          reviewdog_version: v0.13.0
+
+      - name: Black
+        id: black
+        env:
+          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          .github/workflows/black.sh
+
+      - name: mypy
+        id: mypy
+        env:
+          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          .github/workflows/mypy.sh
+
+      - name: isort
+        env:
+          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          .github/workflows/isort.sh
