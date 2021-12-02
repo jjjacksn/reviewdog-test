@@ -2,6 +2,7 @@
 set -eu
 set -o pipefail
 
+TARGET="$@"
 
 echo '::group:: Running isort with reviewdog 🐶 ...'
 isort_exit_val="0"

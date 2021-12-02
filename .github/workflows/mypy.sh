@@ -1,8 +1,8 @@
 #!/bin/bash
-
 set -eu
 set -o pipefail
 
+TARGET="$@"
 
 echo '::group:: Running mypy with reviewdog 🐶 ...'
 mypy_exit_val="0"
