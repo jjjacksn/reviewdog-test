@@ -2,12 +2,12 @@
 set -eu
 set -o pipefail
 
-TARGET="$@"
+
 
 echo '::group:: Running mypy with reviewdog 🐶 ...'
 mypy_exit_val="0"
 reviewdog_exit_val="0"
-mypy_output="$(pipenv run mypy --show-column-numbers --show-absolute-path ${TARGET} 2>&1)" || mypy_exit_val="$?"
+mypy_output="$(pipenv run mypy --show-column-numbers --show-absolute-path . 2>&1)" || mypy_exit_val="$?"
 
 if [[ "${GITHUB_EVENT_NAME}" == 'pull_request' ]]; then
   # Run reviewdog twice for pull requests -- github-pr-review and github-pr-check
@@ -18,7 +18,7 @@ if [[ "${GITHUB_EVENT_NAME}" == 'pull_request' ]]; then
     -efm="%f:%l:%c: %t%*[^:]: %m"               \
     -name="mypy"                                \
     -reporter="github-pr-review"                \
-    -filter-mode="${REVIEWDOG_FILTER_MODE}"     \
+    -filter-mode="added"                        \
     -fail-on-error="${REVIEWDOG_FAIL_ON_ERROR}" \
     -level="${REVIEWDOG_LEVEL}" || reviewdog_exit_val_1="$?"
 
