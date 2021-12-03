@@ -3,14 +3,14 @@ set -eu
 set -o pipefail
 
 echo '::group:: Running isort with reviewdog 🐶 ...'
-isort_exit_val="0"
+isort_exit_val_1="0"
 reviewdog_exit_val="0"
 reviewdog_exit_val_1="0"
 reviewdog_exit_val_2="0"
 
 if [[ "${GITHUB_EVENT_NAME}" == 'pull_request' ]]; then
   # For some reason we are not able to use isort's --diff output directly so we let
-  # isort apply changes and capture the diff directly
+  # isort apply changes and capture the diff from git
 
   # clear any changes that may exist
   git stash
